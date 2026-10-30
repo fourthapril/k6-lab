@@ -8,3 +8,4 @@
 - Step 0.4: The authenticated pizza API run passed all three checks: status 200, a pizza name was present, and every ingredient was vegetarian.
 - Step 0.5: The request without an Authorization token was correctly refused with status 401.
 - Step 0.6: The normal run exited with code 0 and p(95) of 364.12 ms. The stricter `P95=300` run exited with code 99 because its measured p(95) was 372.21 ms.
+- Step 0.7: The requirement run passed `http_req_failed < 1%`, `p(95) < 1000 ms`, `p(99) < 1500 ms`, and `checks > 99%`. Measured p(95) was 384.63 ms and p(99) was 397.57 ms; exit code was 0. After changing the p(95) limit from 1000 ms to 300 ms, p(95) was 375.41 ms and the exit code was 99.
