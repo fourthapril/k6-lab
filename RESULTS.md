@@ -1,22 +1,42 @@
-# K6 lab results
+# ผลการทดลอง K6
 
-## Part 0
+## ส่วนที่ 0: พื้นฐาน K6
 
-- Step 0.1: `http_req_duration` p(95) was 267.40 ms (one request).
-- Step 0.2: 80 requests at 3.837 requests/s, with p(95) of 268.08 ms. The rate stays below 5 requests/s because each of the 5 VUs sleeps for one second after its request, and the HTTP request itself also takes time.
-- Step 0.3: 20 iterations completed exactly, shared by 5 VUs; the run ended when the twentieth iteration finished.
-- Step 0.4: The authenticated pizza API run passed all three checks: status 200, a pizza name was present, and every ingredient was vegetarian.
-- Step 0.5: The request without an Authorization token was correctly refused with status 401.
-- Step 0.6: The normal run exited with code 0 and p(95) of 364.12 ms. The stricter `P95=300` run exited with code 99 because its measured p(95) was 372.21 ms.
-- Step 0.7: The requirement run passed `http_req_failed < 1%`, `p(95) < 1000 ms`, `p(99) < 1500 ms`, and `checks > 99%`. Measured p(95) was 384.63 ms and p(99) was 397.57 ms; exit code was 0. After changing the p(95) limit from 1000 ms to 300 ms, p(95) was 375.41 ms and the exit code was 99.
-- Step 0.8: The exploratory API response listed `Pepperoni` and `Knife` with capital letters. The original lowercase request therefore did not match QuickPizza's case-sensitive catalog. The buggy run had 187/225 checks pass (83.11%), including 15 pepperoni failures and 23 knife failures. The fixed script sends `Pepperoni` and `Knife`; its run had 225/225 checks pass (100%).
+- Step 0.1: ค่า `http_req_duration` ที่ p(95) เท่ากับ 267.40 ms จากการส่งคำขอ 1 ครั้ง
+- Step 0.2: ส่งคำขอทั้งหมด 80 ครั้ง ที่อัตรา 3.837 requests/s และมีค่า p(95) เท่ากับ 268.08 ms อัตราจึงต่ำกว่า 5 requests/s เพราะแต่ละ VU หยุดพัก 1 วินาทีหลังส่งคำขอ และคำขอ HTTP เองก็ใช้เวลาในการตอบกลับ
+- Step 0.3: ทำงานครบ 20 iterations ตามที่กำหนด โดยแบ่งให้ 5 VUs ทำงานร่วมกัน และการทดสอบจบเมื่อ iteration ที่ 20 เสร็จสิ้น
+- Step 0.4: การเรียก Pizza API พร้อม token ผ่านการตรวจสอบทั้ง 3 รายการ ได้แก่ status 200, มีชื่อ pizza และส่วนผสมทุกอย่างเป็นอาหารมังสวิรัติ
+- Step 0.5: คำขอที่ไม่มี Authorization token ถูกปฏิเสธอย่างถูกต้องด้วย status 401
+- Step 0.6: การทดสอบปกติจบด้วย exit code 0 และมี p(95) เท่ากับ 364.12 ms ส่วนการตั้งค่าเข้มงวดที่ `P95=300` จบด้วย exit code 99 เพราะ p(95) ที่วัดได้เท่ากับ 372.21 ms
+- Step 0.7: ผ่านเกณฑ์ `http_req_failed < 1%`, `p(95) < 1000 ms`, `p(99) < 1500 ms` และ `checks > 99%` โดยวัดได้ p(95) 384.63 ms, p(99) 397.57 ms และ exit code 0 เมื่อเปลี่ยนขีดจำกัด p(95) จาก 1000 ms เป็น 300 ms จะได้ p(95) 375.41 ms และ exit code 99
+- Step 0.8: ผลสำรวจ API แสดงชื่อ `Pepperoni` และ `Knife` โดยใช้อักษรตัวใหญ่ คำขอเดิมที่ใช้ตัวพิมพ์เล็กจึงไม่ตรงกับข้อมูลแบบ case-sensitive ของ QuickPizza การทดสอบที่มีข้อผิดพลาดผ่าน 187 จาก 225 checks (83.11%) ส่วนสคริปต์ที่แก้ไขแล้วผ่าน 225 จาก 225 checks (100%)
 
-## Part A results
+## ผลการทดสอบส่วน A
 
-| Step | Test type | Users | Req/s | p(95) | Max | Failed | Checks |
-| ---- | --------- | ----- | ----- | ----- | --- | ------ | ------ |
+| Step | ประเภทการทดสอบ | ผู้ใช้ | Requests/s | p(95) | สูงสุด | ล้มเหลว | Checks |
+| ---- | -------------- | ----- | ---------- | ----- | ------ | -------- | ------- |
 | A1 | Smoke | 1 | 0.550 | 352.05 ms | 356.31 ms | 0.00% | 100.00% |
 | A2 | Average load | 3 | 1.294 | 363.29 ms | 387.97 ms | 0.00% | 100.00% |
 | A3 | Stress | 5 | 2.156 | 367.89 ms | 392.54 ms | 0.00% | 100.00% |
 | A4 | Spike | 5 | 1.004 | 360.73 ms | 1359.06 ms | 0.00% | 100.00% |
 | A5 | Soak | 2 | 1.002 | 375.12 ms | 1283.54 ms | 0.00% | 100.00% |
+
+## ส่วนที่ B: คำตอบวิเคราะห์ผล
+
+1. ตารางด้านบนแสดง request rate, p(95), response time สูงสุด, อัตราคำขอที่ล้มเหลว และอัตรา checks ที่ผ่านของ A1 ถึง A5 โดยทั้ง 5 การทดสอบไม่มี HTTP request ล้มเหลวและ checks ผ่าน 100%
+2. Request rate ต่ำกว่า 5 requests/s เพราะแต่ละ VU หยุดพัก 1 วินาทีระหว่าง iterations และแต่ละ iteration ยังใช้เวลาในการส่งคำขอด้วย ดังนั้น think time และ network latency ทำให้ไม่สามารถส่งได้พอดี 1 request ต่อวินาทีต่อ VU
+3. ค่า p(95) เพิ่มเล็กน้อยจาก 363.29 ms ในการทดสอบ average load เป็น 367.89 ms ในการทดสอบ stress ขณะที่ HTTP failure rate ยังคงเป็น 0% แสดงว่าโหลด 5 VUs ยังอยู่ในขอบเขตที่ระบบรองรับได้จากการทดลองนี้
+4. ช่วง spike เกิดขึ้นเมื่อจำนวน VUs เพิ่มขึ้นเป็น 5 โดย dashboard แสดง home-page p(95) ประมาณ 867.94 ms และกลับมาอยู่ที่ประมาณ 267.29 ms ใน snapshot ถัดไป 10 วินาที จึงใช้เวลาฟื้นตัวประมาณ 10 วินาที
+5. การทดสอบ soak ไม่ได้แย่ลงอย่างมีนัยสำคัญ ค่า p(95) ช่วงแรกอยู่ประมาณ 332-347 ms และช่วงท้ายประมาณ 351-372 ms โดยมี failed requests 0.00% ตลอดการทดสอบ การทดสอบที่นานกว่านี้อาจช่วยค้นหา memory leak, resource exhaustion, connection leak หรือ queue ที่เพิ่มขึ้นเรื่อย ๆ
+6. p(95) อธิบายเวลาตอบสนองของกลุ่มผู้ใช้ที่ช้ากว่า ขณะที่ค่า average อาจซ่อนผู้ใช้ส่วนน้อยที่ได้รับ response ช้ามาก
+7. ระบบในห้องทดลองอาจมี network latency ต่ำกว่าและเส้นทางเครือข่ายผันผวนน้อยกว่า อีกทั้งอาจใช้ทรัพยากรเฉพาะแทนการแชร์ CPU, memory, cache, database และ bandwidth กับผู้ใช้อื่น
+8. การใช้ผู้ใช้จำนวนหลายร้อยคนอาจทำให้เว็บไซต์ที่เราไม่ได้เป็นเจ้าของทำงานหนักหรือหยุดให้บริการ และเป็นการสร้าง traffic โดยไม่ได้รับอนุญาต ซึ่งอาจกระทบผู้ใช้อื่น
+9. ข้อกำหนดที่วัดผลได้คือ เมื่อใช้ 3 VUs ค้นหาเป็นเวลา 30 วินาที อย่างน้อย 95% ของ responses ต้องเสร็จภายใน 1000 ms, อย่างน้อย 99% ต้องเสร็จภายใน 1500 ms, failed requests ต้องน้อยกว่า 1% และ checks ต้องผ่านอย่างน้อย 99%
+
+```js
+thresholds: {
+  http_req_duration: ['p(95)<1000', 'p(99)<1500'],
+  http_req_failed: ['rate<0.01'],
+  checks: ['rate>0.99'],
+}
+```
